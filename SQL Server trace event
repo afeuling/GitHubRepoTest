@@ -1,0 +1,8 @@
+select
+X.eventid,
+E.Name as EventName,
+X.columnid,
+V.name as ColumnName
+from ::fn_trace_geteventinfo(1) AS X
+INNER JOIN sys.trace_events E ON X.eventid = E.trace_event_id
+INNER JOIN sys.trace_columns V ON X.columnid = V.trace_column_id
