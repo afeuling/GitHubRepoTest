@@ -1,0 +1,24 @@
+Enter file contents here--Call Data Cube query with Agents and Manhours
+select
+CONVERT(varchar(10),History.CallDateTime,101) as CallDateTime,
+CONVERT(varchar(3), History.CallDateTime, 100) + ' ' + CONVERT(varchar(4),Year(History.CallDateTime)) as MonthYear,
+CONVERT(varchar,year(History.CallDateTime)) + right('0' + CONVERT(varchar,month(History.CallDateTime)), 2) as MonthYearSort,
+p.ProjectID, p.ProjectName, History.SourceID, History.AgentID, DimUser.USR_NAME, History.CRC, sum(History.TalkTime) as TalkTime, sum(History.HoldTime) as HoldTime, sum(History.WrapTime) as WrapTime, 
+sum(History.QueueTime) as QueueTime, sum(History.ConnectTime) as ConnectTime, sum(History.WaitTime) as WaitTime, sum(History.DeadTime) as DeadTime, 
+sum(History.PreviewTime) as PreviewTime, sum(History.AgentHoldTime) as AgentHoldTime,
+--select top 5000 * 
+--from SQL.Touchstar.dbo.History
+sum(case History.IbOb when 1 then 1 else 0 end) as Ob1Ttl,
+sum(case History.IbOb when 2 then 1 else 0 end) as Ob2Ttl,
+sum(case History.IbOb when 0 then 1 else 0 end) as Ib0Ttl,
+sum(case History.IbOb when 3 then 1 else 0 end) as Ib3Ttl,
+count(History.IbOb) as IbObTtl,
+(Sum(History.TalkTime) + Sum(History.WrapTime) + Sum(History.WaitTime) + Sum(History.PreviewTime) + Sum(History.DeadTime)) as Manhours
+into History_Day
+FROM   SQL.Touchstar.dbo.History with (nolock) inner join DimProject p ON History.ProjectID=p.ProjectID
+left outer join DimUser on History.AgentID = DimUser.AgentID
+group by 
+CONVERT(varchar(10),History.CallDateTime,101),
+CONVERT(varchar(3), History.CallDateTime, 100) + ' ' + Convert(varchar(4),Year(History.CallDateTime)), 
+Convert(varchar,year(History.CallDateTime)) + right('0' + Convert(varchar,month(History.CallDateTime)), 2), 
+p.ProjectID, p.ProjectName, History.SourceID, History.AgentID, DimUser.USR_NAME, History.CRC
